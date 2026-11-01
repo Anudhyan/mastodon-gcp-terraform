@@ -45,7 +45,7 @@ Terraform best practices dictate Kubernetes clusters and Kubernetes resources no
 
 The `dependencies` Terraform module provisions GCP-managed resources and Google Kubernetes Engine in autopilot mode.
 
-The `mastodon` Terraform module deploys the official [Mastodon Helm chart](https://github.com/mastodon/chart) with GCP-specific amendments.
+The `mastodon` Terraform module deploys the official [Mastodon Helm chart](https://github.com/mastodon/helm-charts) with GCP-specific amendments.
 
 Run `terraform init` in both module directories.
 
@@ -57,11 +57,9 @@ Run `terraform init` in both module directories.
 
 ### Deploy Mastodon and GKE resources
 
-1. Clone the Mastodon Helm chart into `./charts` because it is not published anywhere [yet](https://github.com/mastodon/chart/issues/27). `cd ./charts && git clone https://github.com/mastodon/chart.git --single-branch --branch=main --depth=1 && cd chart && helm dep update`
+1. Create a `terraform.tfvars` file in `./mastodon/` with the necessary variables. See the [`mastodon/terraform.tfvars.example`](./mastodon/terraform.tfvars.example) file for guidance.
 
-2. Create a `terraform.tfvars` file in `./mastodon/` with the necessary variables. See the [`mastodon/terraform.tfvars.example`](./mastodon/terraform.tfvars.example) file for guidance.
-
-3. `cd ./mastodon && terraform apply`
+2. `cd ./mastodon && terraform apply`
 
 ## Known limitations
 

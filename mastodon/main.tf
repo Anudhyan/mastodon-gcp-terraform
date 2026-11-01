@@ -69,15 +69,12 @@ provider "helm" {
   }
 }
 
-# Mastodon does not yet publish its Helm chart in a chart repository
-# See: https://github.com/mastodon/chart/issues/27
-# See: https://github.com/mastodon/chart/pull/54
-# Downloading as source as an interim solution
-
 resource "helm_release" "mastodon" {
-  name      = "mastodon"
-  namespace = var.kubernetes_namespace
-  chart     = "../charts/chart"
+  name       = "mastodon"
+  namespace  = var.kubernetes_namespace
+  chart      = "mastodon"
+  repository = "https://mastodon.github.io/helm-charts/"
+  version    = "1.2.7"
 
   create_namespace = true
 
@@ -98,7 +95,7 @@ resource "helm_release" "mastodon" {
     },
 
     {
-      name  = "mastodon.local_domain"
+      name  = "mastodon.localDomain"
       value = var.local_domain
     },
 
@@ -121,11 +118,7 @@ resource "helm_release" "mastodon" {
     },
 
     {
-      name  = "mastodon.s3.enabled"
-      value = true
-    },
-    {
-      name  = "mastodon.s3.access_key"
+      name  = "mastodon.s3.accessKeyId"
       value = data.terraform_remote_state.dependencies.outputs.s3_access_key
     },
     {
@@ -145,7 +138,7 @@ resource "helm_release" "mastodon" {
       value = data.terraform_remote_state.dependencies.outputs.gcs_region
     },
     {
-      name  = "mastodon.secrets.vapid.public_key"
+      name  = "mastodon.secrets.vapidPublicKey"
       value = var.vapid_public_key
     },
 
@@ -179,10 +172,18 @@ resource "helm_release" "mastodon" {
     },
 
     {
-      name  = "mastodon.trusted_proxy_ip"
+      name  = "mastodon.trustedProxyIp"
       value = var.trusted_proxy_ip
     },
 
+    {
+      name  = "ingress.enabled"
+      value = true
+    },
+    {
+      name  = "httproute.enabled"
+      value = false
+    },
     {
       name  = "ingress.annotations.networking\\.gke\\.io/managed-certificates"
       value = var.tls_certificate_name
@@ -200,35 +201,31 @@ resource "helm_release" "mastodon" {
       value = "/"
     },
     {
+      name  = "ingress.hosts[0].paths[0].pathType"
+      value = "Prefix"
+    },
+    {
       name  = "ingress.tls"
-      value = false
+      value = "null"
     },
 
     {
-      name  = "postgresql.enabled"
-      value = false
-    },
-    {
-      name  = "postgresql.postgresqlHostname"
+      name  = "postgresql.hostname"
       value = data.terraform_remote_state.dependencies.outputs.db_hostname
     },
     {
-      name  = "postgresql.postgresqlPort"
+      name  = "postgresql.port"
       value = 5432
     },
     {
-      name  = "postgresql.auth.database"
+      name  = "postgresql.database"
       value = data.terraform_remote_state.dependencies.outputs.db_name
     },
     {
-      name  = "postgresql.auth.username"
+      name  = "postgresql.username"
       value = data.terraform_remote_state.dependencies.outputs.db_user
     },
 
-    {
-      name  = "redis.enabled"
-      value = false
-    },
     {
       name  = "redis.hostname"
       value = data.terraform_remote_state.dependencies.outputs.redis_hostname
@@ -246,36 +243,32 @@ resource "helm_release" "mastodon" {
 
   set_sensitive = [
     {
-      name  = "mastodon.s3.access_secret"
+      name  = "mastodon.s3.secretAccessKey"
       value = data.terraform_remote_state.dependencies.outputs.s3_access_secret
     },
 
     {
-      name  = "mastodon.secrets.secret_key_base"
+      name  = "mastodon.secrets.secretKeyBase"
       value = var.secret_key_base
     },
     {
-      name  = "mastodon.secrets.otp_secret"
-      value = var.otp_secret
-    },
-    {
-      name  = "mastodon.secrets.vapid.private_key"
+      name  = "mastodon.secrets.vapidPrivateKey"
       value = var.vapid_private_key
     },
     {
-      name  = "mastodon.secrets.activeRecordEncryption.primaryKey"
+      name  = "mastodon.secrets.arePrimaryKey"
       value = var.active_record_encryption_primary_key
     },
     {
-      name  = "mastodon.secrets.activeRecordEncryption.deterministicKey"
+      name  = "mastodon.secrets.areDeterministicKey"
       value = var.active_record_encryption_deterministic_key
     },
     {
-      name  = "mastodon.secrets.activeRecordEncryption.keyDerivationSalt"
+      name  = "mastodon.secrets.areKeyDerivationSalt"
       value = var.active_record_encryption_key_derivation_salt
     },
     {
-      name  = "mastodon.smtp.login"
+      name  = "mastodon.smtp.username"
       value = var.smtp_login
     },
     {
@@ -283,7 +276,7 @@ resource "helm_release" "mastodon" {
       value = var.smtp_password
     },
     {
-      name  = "postgresql.auth.password"
+      name  = "postgresql.password"
       value = data.terraform_remote_state.dependencies.outputs.db_pass
     },
     {
