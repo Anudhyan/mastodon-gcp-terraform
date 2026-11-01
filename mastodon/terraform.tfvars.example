@@ -4,6 +4,24 @@ project = "my-gcp-mastodon-project-999999"
 
 credentials_file_path = "../terraform-sa.json"
 
+# Pass these values from the dependencies module instead of using remote state.
+dependencies = {
+	gke_endpoint       = ""
+	gke_ca_certificate = ""
+	gcs_name           = ""
+	gcs_region         = ""
+	s3_access_key      = ""
+	s3_access_secret   = ""
+	db_hostname        = ""
+	db_name            = ""
+	db_user            = ""
+	db_pass             = ""
+	redis_hostname     = ""
+	redis_port         = 6379
+	redis_auth_string   = ""
+	ingress_ipv4_name  = ""
+}
+
 # Mastodon Helm chart env vars
 active_record_encryption_primary_key         = ""
 active_record_encryption_deterministic_key   = ""

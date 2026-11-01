@@ -25,20 +25,10 @@ provider "google" {
 
 data "google_client_config" "default" {}
 
-data "terraform_remote_state" "dependencies" {
-  backend = "gcs"
-
-  config = {
-    bucket      = "interledger-social-terraform"
-    prefix      = "terraform/state"
-    credentials = "../terraform-sa.json"
-  }
-}
-
 provider "kubernetes" {
-  host                   = "https://${data.terraform_remote_state.dependencies.outputs.gke_endpoint}"
+  host                   = "https://${var.dependencies.gke_endpoint}"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(data.terraform_remote_state.dependencies.outputs.gke_ca_certificate)
+  cluster_ca_certificate = base64decode(var.dependencies.gke_ca_certificate)
 }
 
 # Prepare GKE ingress TLS certificate
@@ -63,9 +53,9 @@ resource "kubernetes_manifest" "managedcertificate_managed_cert" {
 # Mastodon release on Kubernetes
 provider "helm" {
   kubernetes = {
-    host                   = "https://${data.terraform_remote_state.dependencies.outputs.gke_endpoint}"
+    host                   = "https://${var.dependencies.gke_endpoint}"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(data.terraform_remote_state.dependencies.outputs.gke_ca_certificate)
+    cluster_ca_certificate = base64decode(var.dependencies.gke_ca_certificate)
   }
 }
 
@@ -119,11 +109,11 @@ resource "helm_release" "mastodon" {
 
     {
       name  = "mastodon.s3.accessKeyId"
-      value = data.terraform_remote_state.dependencies.outputs.s3_access_key
+      value = var.dependencies.s3_access_key
     },
     {
       name  = "mastodon.s3.bucket"
-      value = data.terraform_remote_state.dependencies.outputs.gcs_name
+      value = var.dependencies.gcs_name
     },
     {
       name  = "mastodon.s3.endpoint"
@@ -135,7 +125,7 @@ resource "helm_release" "mastodon" {
     },
     {
       name  = "mastodon.s3.region"
-      value = data.terraform_remote_state.dependencies.outputs.gcs_region
+      value = var.dependencies.gcs_region
     },
     {
       name  = "mastodon.secrets.vapidPublicKey"
@@ -190,7 +180,7 @@ resource "helm_release" "mastodon" {
     },
     {
       name  = "ingress.annotations.kubernetes\\.io/ingress\\.global-static-ip-name"
-      value = data.terraform_remote_state.dependencies.outputs.ingress_ipv4_name
+      value = var.dependencies.ingress_ipv4_name
     },
     {
       name  = "ingress.hosts[0].host"
@@ -211,7 +201,7 @@ resource "helm_release" "mastodon" {
 
     {
       name  = "postgresql.hostname"
-      value = data.terraform_remote_state.dependencies.outputs.db_hostname
+      value = var.dependencies.db_hostname
     },
     {
       name  = "postgresql.port"
@@ -219,20 +209,20 @@ resource "helm_release" "mastodon" {
     },
     {
       name  = "postgresql.database"
-      value = data.terraform_remote_state.dependencies.outputs.db_name
+      value = var.dependencies.db_name
     },
     {
       name  = "postgresql.username"
-      value = data.terraform_remote_state.dependencies.outputs.db_user
+      value = var.dependencies.db_user
     },
 
     {
       name  = "redis.hostname"
-      value = data.terraform_remote_state.dependencies.outputs.redis_hostname
+      value = var.dependencies.redis_hostname
     },
     {
       name  = "redis.port"
-      value = data.terraform_remote_state.dependencies.outputs.redis_port
+      value = var.dependencies.redis_port
     },
 
     {
@@ -244,7 +234,7 @@ resource "helm_release" "mastodon" {
   set_sensitive = [
     {
       name  = "mastodon.s3.secretAccessKey"
-      value = data.terraform_remote_state.dependencies.outputs.s3_access_secret
+      value = var.dependencies.s3_access_secret
     },
 
     {
@@ -277,11 +267,11 @@ resource "helm_release" "mastodon" {
     },
     {
       name  = "postgresql.password"
-      value = data.terraform_remote_state.dependencies.outputs.db_pass
+      value = var.dependencies.db_pass
     },
     {
       name  = "redis.auth.password"
-      value = data.terraform_remote_state.dependencies.outputs.redis_auth_string
+      value = var.dependencies.redis_auth_string
     },
   ]
 

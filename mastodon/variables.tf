@@ -5,6 +5,28 @@ variable "credentials_file_path" {
 
 variable "project" {}
 
+variable "dependencies" {
+  description = "Outputs from the infrastructure module used by the Mastodon deployment"
+  sensitive   = true
+
+  type = object({
+    gke_endpoint       = string
+    gke_ca_certificate = string
+    gcs_name           = string
+    gcs_region         = string
+    s3_access_key      = string
+    s3_access_secret   = string
+    db_hostname        = string
+    db_name            = string
+    db_user            = string
+    db_pass            = string
+    redis_hostname     = string
+    redis_port         = number
+    redis_auth_string  = string
+    ingress_ipv4_name  = string
+  })
+}
+
 variable "region" {
   # Consider the planet: https://cloud.google.com/sustainability/region-carbon
   default = "europe-north1"
